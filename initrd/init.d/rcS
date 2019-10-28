@@ -1,0 +1,10 @@
+#!/bin/sh
+mount -t proc none /proc
+mount -t sysfs none /sys
+mdev -s
+
+/etc/init.d/S99run
+if [[ $? != 2 ]]; then
+    sync
+    poweroff -f
+fi

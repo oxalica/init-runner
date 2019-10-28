@@ -1,0 +1,71 @@
+#!/bin/sh -e
+export LD_LIBRARY_PATH=/lib:/mnt/lib
+
+msg () {
+    echo -e "\e[1;34minit-runner: $1\e[0;37m"
+}
+
+quit () {
+    if [[ "$KEEP_SHELL" == 1 ]]; then
+        msg "'KEEP_SHELL' is set, keep the shell"
+        exit 2
+    else
+        exit $1
+    fi
+}
+
+msg "System: $(uname -a)"
+
+# Mount the disk
+
+MOUNTED=
+for dev in vda sda hda; do
+    msg "Try mount /dev/$dev"
+    if mount "/dev/$dev" /mnt; then
+        MOUNTED=1
+        break
+    fi
+done
+if [[ ! "$MOUNTED" ]]; then
+    msg "Cannot mount drive"
+    quit 1
+fi
+
+# Global config
+if [[ -f /mnt/.env ]]; then
+    msg "Import .env"
+    source /mnt/.env
+fi
+
+# Binaries to run
+
+if [[ -d /mnt/bin ]]; then
+    msg "Directory 'bin' exists. Scan it recursively"
+    BIN_FILES=$(find -L /mnt/bin -type f -executable -not -name '.env' | sort)
+else
+    BIN_FILES=$(find -L /mnt -maxdepth 1 -type f -executable -not -name '.env' | sort)
+fi
+if [[ -z "$BIN_FILES" ]]; then
+    msg "No binary to run"
+    quit 1
+fi
+
+# Run
+
+env >&2
+
+for f in $BIN_FILES; do
+    FLAGS=$GLOBAL_FLAGS
+    msg "Run: $f $FLAGS"
+    set +e
+    env "$f" $FLAGS
+    EXIT=$?
+    set -e
+    if [[ $EXIT != 0 ]]; then
+        msg "$f exited with code $EXIT"
+        quit 1
+    fi
+done
+
+msg "All tasks done"
+quit
