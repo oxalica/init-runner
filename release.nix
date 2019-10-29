@@ -1,1 +1,1 @@
-builtins.mapAttrs (k: v: v.package) (import ./.)
+(import <nixpkgs/lib>).mapAttrs (k: v: v.package) (import ./.)

@@ -1,4 +1,4 @@
-builtins.mapAttrs (config: { platform, qemuFlags ? "" }: let
+(import <nixpkgs/lib>).mapAttrs (config: { platform, qemuFlags ? "" }: let
   version = "0.0.0";
 
   pkgsCross = import <nixpkgs> { crossSystem = platform; };
