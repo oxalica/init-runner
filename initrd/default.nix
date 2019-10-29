@@ -1,4 +1,4 @@
-{ stdenv, buildPackages, hostPlatform, busybox, glibc, cpio
+{ lib, stdenv, buildPackages, hostPlatform, busybox, glibc, cpio
 , cpioFormat ? "newc" }:
 
 let
@@ -7,8 +7,7 @@ let
   };
 
 in stdenv.mkDerivation {
-  pname = "init-runner-initrd";
-  version = "0.0.0";
+  name = "init-runner-initrd";
 
   src = ./init.d;
 
@@ -23,7 +22,8 @@ in stdenv.mkDerivation {
     find ${glibc}/lib -maxdepth 1 -name '*.so*' -print0 | xargs -0 cp -Pt rootfs/lib
     ln -s ld-linux-armhf.so.3 rootfs/lib/ld-linux.so.3
 
-    cp ${stdenv.cc.cc}/${hostPlatform.config}/lib/libgcc_s.so.1 rootfs/lib
+    cp ${stdenv.cc.cc}/${hostPlatform.config}/lib${lib.optionalString hostPlatform.is64bit "64"}/libgcc_s.so.1 \
+      rootfs/lib
   '';
 
   installPhase = ''
