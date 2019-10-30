@@ -43,8 +43,16 @@
   }) {};
 
   kernel = linuxManualConfig {
-    inherit src version stdenv configfile;
+    inherit src version configfile;
     modDirVersion = version;
+    stdenv = stdenv.override {
+      hostPlatform = lib.recursiveUpdate stdenv.hostPlatform {
+        platform = {
+          kernelTarget = "Image";
+          kernelDTB = false;
+        };
+      };
+    };
   };
 
 in kernel
