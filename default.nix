@@ -8,7 +8,7 @@ in rec {
 
   initrd = pkgsCross.callPackage ./initrd {};
 
-  kernel = pkgsCross.linux_5_3;
+  kernel = pkgsCross.callPackage ./kernel.nix {};
 
   run-qemu = pkgs.callPackage ./run-qemu.nix {
     inherit initrd kernel pkgsCross qemuFlags;

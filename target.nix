@@ -1,6 +1,4 @@
-with import <nixpkgs/lib>;
-mapAttrs (k: v: recursiveUpdate v { platform.platform.kernelTarget = "Image"; })
-{
+with import <nixpkgs/lib>; {
 
   aarch64-unknown-linux-gnu = {
     platform = systems.examples.aarch64-multiplatform;
