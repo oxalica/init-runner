@@ -11,7 +11,7 @@ let
 
 in runCommand name {} ''
   mkdir init-runner
-  cp -t init-runner ${initrd}/initrd.img ${kernel}/Image ${run-qemu'}/bin/init-runner-qemu
+  cp -t init-runner ${initrd}/initrd.img ${kernel}/*Image ${run-qemu'}/bin/init-runner-qemu
 
   mkdir -p $out/dist
   tar -czf $out/dist/${name}.tar.gz init-runner

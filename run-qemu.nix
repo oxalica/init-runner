@@ -1,7 +1,7 @@
 { lib, writeTextFile, bash, genext2fs, qemu
 , initrd, kernel, pkgsCross, qemuFlags
 , standalone ? false
-, checkRun ? true, checkRunTimeout ? "60s", checkRunMemory ? "256" }:
+, check ? null, checkRunTimeout ? "60s", checkRunMemory ? "256" }:
 let
   inherit (pkgsCross.hostPlatform) qemuArch;
 
@@ -34,7 +34,7 @@ in writeTextFile rec {
 
     exec ${prefix "${qemu}/bin/"}qemu-system-${qemuArch} \
       -m $MEMORY \
-      -kernel ${if standalone then "$(dirname $0)" else kernel}/Image \
+      -kernel ${if standalone then "$(dirname $0)" else kernel}/*Image \
       -initrd ${if standalone then "$(dirname $0)" else initrd}/initrd.img \
       -append "panic=1 rdinit=/sbin/init" \
       -no-reboot \
@@ -46,25 +46,18 @@ in writeTextFile rec {
       $QEMU_FLAGS
   '';
 
-  checkPhase = let
-    # Unpatch test binaries
-    patchelf = pkgsCross.buildPackages.patchelf;
-  in ''
+  checkPhase = ''
     ${bash}/bin/sh -n $out/bin/${name}
-  '' + lib.optionalString checkRun ''
+  '' + lib.optionalString (check != null) ''
     export MEMORY=${checkRunMemory}
 
     mkdir -p disk/bin
-    install -Dm755 ${pkgsCross.hello}/bin/hello disk/bin
-    intp=$(${patchelf}/bin/patchelf --print-interpreter disk/bin/hello |
-      sed -nE 's%/nix/store/[^/]*(/.*)%\1%p')
-    ${patchelf}/bin/patchelf --set-interpreter "$intp" disk/bin/hello
+    install -Dm755 ${check}/bin/* disk/bin
 
     cp $out/bin/${name} ./
     ${lib.optionalString standalone ''
       export PATH=$PATH:${genext2fs}/bin:${qemu}/bin
-      ln -s ${kernel}/Image Image
-      ln -s ${initrd}/initrd.img initrd.img
+      ln -s ${kernel}/*Image ${initrd}/initrd.img ./
     ''}
     content=$(
       timeout ${checkRunTimeout} ${bash}/bin/sh ./${name} disk 2>&1 |

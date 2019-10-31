@@ -1,20 +1,24 @@
-{ lib, stdenv, buildPackages, linuxManualConfig, linux_5_3 }: let
+{ lib, stdenv, buildPackages, linuxManualConfig, linux_5_3
+, kernelConfigure }: let
 
-  inherit (stdenv.hostPlatform) kernelArch;
+  inherit (stdenv.hostPlatform.platform) kernelArch kernelBaseConfig kernelTarget;
 
   inherit (linux_5_3) src version;
-  defconfig = "defconfig";
   extraConfig = {
     CONFIG_MMC = "n";
-    CONFIG_WIRELESS = "n";
-    CONFIG_USB = "n";
     CONFIG_VIRTUALIZATION = "n";
     CONFIG_SOUND = "n";
     CONFIG_SUSPEND = "n";
     CONFIG_HIBERNATION = "n";
-    CONFIG_PM = "n";
-
+    CONFIG_THERMAL = "n";
+    CONFIG_USB_SUPPORT = "n";
     CONFIG_ETHERNET = "n";
+    CONFIG_WIRELESS = "n";
+    CONFIG_WLAN = "n";
+    CONFIG_DRM = "n";
+    CONFIG_MEDIA_SUPPORT = "n";
+    CONFIG_REGULATOR = "n";
+    CONFIG_NFS_FS = "n";
   };
 
   configfile = buildPackages.callPackage ({ stdenv, bison, flex }:
@@ -24,16 +28,12 @@
     nativeBuildInputs = [ bison flex ];
     buildPhase = ''
       set -x
-      make ${defconfig} ARCH=${kernelArch}
+      make ${kernelBaseConfig} ARCH=${kernelArch}
       cat >>.config <<EOF
       ${lib.concatStringsSep "\n" (lib.mapAttrsToList (k: v: "${k}=${v}") extraConfig)}
       EOF
-
-      sed --in-place \
-        -e 's/=m$/=n/' \
-        -e '/Platform selection/,/end of Platform selection/ s/=y$/=n/p' \
-        .config
-
+      ${kernelConfigure}
+      sed --in-place 's/=m$/=n/' .config
       set +x +o pipefail
       yes "" | make config ARCH=${kernelArch}
     '';
@@ -46,9 +46,10 @@
     inherit src version configfile;
     modDirVersion = version;
     stdenv = stdenv.override {
-      hostPlatform = lib.recursiveUpdate stdenv.hostPlatform {
+      hostPlatform = stdenv.hostPlatform // {
         platform = {
-          kernelTarget = "Image";
+          inherit (stdenv.hostPlatform) gcc;
+          inherit kernelArch kernelTarget;
           kernelDTB = false;
         };
       };
