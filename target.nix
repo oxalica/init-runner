@@ -14,6 +14,7 @@ with import <nixpkgs/lib>; {
   };
 
   armv7l-unknown-linux-gnueabihf = {
+    # Kernel target is `zImage` here. `Image` doesn't boot.
     platform = systems.examples.armv7l-hf-multiplatform;
     qemuFlags = "-M virt -cpu cortex-a15";
     kernelConfigure = ''

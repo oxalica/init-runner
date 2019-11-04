@@ -34,12 +34,16 @@ in writeTextFile rec {
 
     exec ${prefix "${qemu}/bin/"}qemu-system-${qemuArch} \
       -m $MEMORY \
-      -kernel ${if standalone then "$(dirname $0)" else kernel}/*Image \
+      -kernel ${if standalone then "$(dirname $0)" else kernel}/vmlinux \
       -initrd ${if standalone then "$(dirname $0)" else initrd}/initrd.img \
       -append "panic=1 rdinit=/sbin/init" \
       -no-reboot \
-      -drive if=none,file="$IMG",format=raw,id=hd1 \
-      -device virtio-blk-device,drive=hd1 \
+      ${if qemuArch == "arm" then ''
+        -drive if=none,file="$IMG",format=raw,id=hd1 \
+        -device virtio-blk-device,drive=hd1 \
+      '' else ''
+        -drive file="$IMG",format=raw \
+      ''} \
       -serial mon:stdio \
       -nographic \
       ${qemuFlags} \
@@ -57,7 +61,7 @@ in writeTextFile rec {
     cp $out/bin/${name} ./
     ${lib.optionalString standalone ''
       export PATH=$PATH:${genext2fs}/bin:${qemu}/bin
-      ln -s ${kernel}/*Image ${initrd}/initrd.img ./
+      ln -s ${kernel}/vmlinux ${initrd}/initrd.img ./
     ''}
     content=$(
       timeout ${checkRunTimeout} ${bash}/bin/sh ./${name} disk 2>&1 |

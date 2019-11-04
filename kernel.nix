@@ -1,4 +1,4 @@
-{ lib, stdenv, buildPackages, linuxManualConfig, linux_5_3
+{ lib, stdenv, buildPackages, linuxManualConfig, writeTextFile, linux_5_3
 , kernelConfigure }: let
 
   inherit (stdenv.hostPlatform.platform) kernelArch kernelBaseConfig kernelTarget;
@@ -42,18 +42,37 @@
     '';
   }) {};
 
-  kernel = linuxManualConfig {
+  installkernel = writeTextFile {
+    name = "installkernel";
+    executable = true;
+    text = ''
+      #!${stdenv.shell} -e
+      mkdir -p "$4"
+      cp -av "$2" "$4/vmlinux"
+      cp -av "$3" "$4/System.map"
+    '';
+  };
+
+  kernel = (linuxManualConfig {
     inherit src version configfile;
-    modDirVersion = version;
+
     stdenv = stdenv.override {
-      hostPlatform = stdenv.hostPlatform // {
-        platform = {
-          inherit (stdenv.hostPlatform) gcc;
-          inherit kernelArch kernelTarget;
-          kernelDTB = false;
-        };
+      hostPlatform = lib.recursiveUpdate stdenv.hostPlatform {
+        platform.kernelDTB = false;
       };
     };
-  };
+
+  }).overrideAttrs (attrs: {
+    buildFlags = [
+      "KBUILD_BUILD_VERSION=init-runner-os"
+      stdenv.hostPlatform.platform.kernelTarget
+      "vmlinux"
+    ];
+
+    installFlags = [
+      "INSTALLKERNEL=${installkernel}"
+      "INSTALL_PATH=$(out)"
+    ];
+  });
 
 in kernel
