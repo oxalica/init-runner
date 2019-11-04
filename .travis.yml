@@ -1,0 +1,28 @@
+language: nix
+nix: 2.3.1
+matrix:
+  include:
+    - env: TARGET=aarch64-unknown-linux-gnu
+    - env: TARGET=armv7l-unknown-linux-gnueabihf
+    - env: TARGET=mips-unknown-linux-gnu
+    - env: TARGET=mipsel-unknown-linux-gnu
+
+script:
+  - export NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1
+  - nix-env -iA cachix -f https://cachix.org/api/v1/install
+  - cachix use init-runner
+  - nix copy --from https://init-runner.cachix.org -f . $TARGET.deps
+  - nix-build . -A $TARGET.package -o result-package
+
+deploy:
+  provider: releases
+  api_key:
+    secure: hsbHXfXap7U+hnfAVAIp/qQMK4COOCikJjGNykV4qELk/ZqxXzm+OeBVntqy8RZVqbs+G4a4Uhq8UBeLWMAN7lxKZBuhOcxqjMs1CHsHUXqAd4zsNCakzhzf6QD/Tl3oAsec4OFIuYsh7JZlhWWL/iDvdZYn+kcwIpiFhUZcrYssoUNRMtgP9oTy3ogXjTk9/IF9re1rVf0d0xS4zDHSZHQAxa3HupqL9vl6em3HHmxma0zJ70ze5JlBiN4w84oR10Dakdfk5ZIzyUFz55m0ar2wa3ASV/mu8zZb2DgmMg/UQKUxZj6jcJOybBUXUs1Zt37pCTvF0ihEaX3buHhNPMIrR1ouuMjrt3JZHzxZKZwBll10Lm4wfbVqwdjuHzpsEKgknuFByyX7+V7+8P6/YHokA83xfAmFkSbKySOdJsW4EWmpXyneb3SF9I3JERvlH5epz1f+mncfZRMOaIvMBj2T1yYBpQy3LBQAxGgMBSb2ygEJa0m5EyIy86AwYBLPR5C8AcFQmgdI9rBXjjKkBiGRAjrO8FR/IuX7mOivakrelccG5qWti45YP/yVInPe74IeGFOLhhOOzxIKIfXBwuvMwgEGH4wr6jxCKVfxGuVCFblesBeqbLAyvfXlw2yEgYuoAGSAMu2cYLXU78snbE8YidEMSEsJGWtpf8Ul8kQ=
+  skip_cleanup: true
+  draft: true
+  file_glob: true
+  file: result-package/dist/*
+  overwrite: true
+  on:
+    repo: oxalica/init-runner
+    tags: true

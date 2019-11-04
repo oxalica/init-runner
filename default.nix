@@ -22,4 +22,12 @@ in rec {
     inherit version initrd kernel run-qemu pkgsCross;
   };
 
+  # Build dependencies to be cached. Compilers, libc, etc.
+  deps = [
+    pkgsCross.stdenv
+    pkgsCross.glibc
+    (pkgsCross.busybox.override { enableStatic = true; })
+    pkgsCross.buildPackages.utillinuxMinimal
+  ];
+
 }) (import ./target.nix)
