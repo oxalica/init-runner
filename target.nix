@@ -64,7 +64,7 @@ with import <nixpkgs/lib>; {
       platform = {
         gcc.abi = "32";
         kernelArch = "mips";
-        kernelTarget = "vmlinuz";
+        kernelTarget = "vmlinux";
         kernelBaseConfig = "malta_defconfig";
       };
     };
