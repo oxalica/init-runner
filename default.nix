@@ -1,5 +1,5 @@
 (import <nixpkgs/lib>).mapAttrs (config:
-{ platform, qemuFlags ? "", kernelConfigure ? "" }: let
+{ platform, qemuFlags ? "", kernelConfigure ? "", kernelInstall ? null }: let
   version = "0.0.0";
 
   pkgsCross = import <nixpkgs> { crossSystem = platform; };
@@ -10,7 +10,7 @@ in rec {
   initrd = pkgsCross.callPackage ./initrd {};
 
   kernel = pkgsCross.callPackage ./kernel.nix {
-    inherit kernelConfigure;
+    inherit kernelConfigure kernelInstall;
   };
 
   run-qemu = pkgs.callPackage ./run-qemu.nix {

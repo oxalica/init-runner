@@ -1,5 +1,5 @@
 { lib, stdenv, buildPackages, linuxManualConfig, writeTextFile, linux_5_3
-, kernelConfigure }: let
+, kernelConfigure, kernelInstall }: let
 
   inherit (stdenv.hostPlatform.platform) kernelArch kernelBaseConfig kernelTarget;
 
@@ -73,6 +73,8 @@
       "INSTALLKERNEL=${installkernel}"
       "INSTALL_PATH=$(out)"
     ];
+  } // lib.optionalAttrs (kernelInstall != null) {
+    installPhase = kernelInstall attrs;
   });
 
 in kernel

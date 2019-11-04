@@ -31,4 +31,52 @@ with import <nixpkgs/lib>; {
     '';
   };
 
+  mips-unknown-linux-gnu = {
+    qemuFlags = "-M malta";
+    platform = {
+      config = "mips-unknown-linux-gnu";
+      platform = {
+        gcc.abi = "32";
+        kernelArch = "mips";
+        kernelTarget = "vmlinux";
+        kernelBaseConfig = "malta_defconfig";
+      };
+    };
+    kernelConfigure = ''
+      cat >>.config <<EOF
+      CONFIG_CPU_LITTLE_ENDIAN=n
+      CONFIG_CPU_BIG_ENDIAN=y
+      CONFIG_BLK_DEV_INITRD=y
+      EOF
+    '';
+    # `make install` requires `vmlinuz`, but we only build `vmlinux`.
+    kernelInstall = attrs: ''
+      mkdir $out
+      install -Dm 755 vmlinux $out
+      install -Dm 644 System.map $out
+    '';
+  };
+
+  mipsel-unknown-linux-gnu = {
+    qemuFlags = "-M malta";
+    platform = {
+      config = "mipsel-unknown-linux-gnu";
+      platform = {
+        gcc.abi = "32";
+        kernelArch = "mips";
+        kernelTarget = "vmlinuz";
+        kernelBaseConfig = "malta_defconfig";
+      };
+    };
+    kernelConfigure = ''
+      cat >>.config <<EOF
+      CONFIG_BLK_DEV_INITRD=y
+      EOF
+    '';
+    kernelInstall = attrs: ''
+      mkdir $out
+      install -Dm 755 vmlinux $out
+      install -Dm 644 System.map $out
+    '';
+  };
 }
