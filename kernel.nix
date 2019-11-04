@@ -1,4 +1,5 @@
-{ lib, stdenv, buildPackages, linuxManualConfig, writeTextFile, linux_5_3
+{ lib, stdenv, buildPackages, linuxManualConfig, writeTextFile
+, linux_5_3, utillinuxMinimal
 , kernelConfigure, kernelInstall }: let
 
   inherit (stdenv.hostPlatform.platform) kernelArch kernelBaseConfig kernelTarget;
@@ -63,6 +64,11 @@
     };
 
   }).overrideAttrs (attrs: {
+    # Override utillinux -> utillinuxMinimal to shrink deps.
+    nativeBuildInputs =
+      lib.filter (pkg: pkg.pname or null != "util-linux") attrs.nativeBuildInputs
+      ++ [ utillinuxMinimal ];
+
     buildFlags = [
       "KBUILD_BUILD_VERSION=init-runner-os"
       stdenv.hostPlatform.platform.kernelTarget
