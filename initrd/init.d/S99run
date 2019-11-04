@@ -15,6 +15,12 @@ quit () {
 }
 
 msg "System: $(uname -a)"
+t=$(echo -ne "\01" | hexdump -x)
+if [ "${t:14:1}" = "1" ]; then
+    msg "Endian: Little endian"
+else
+    msg "Endian: Big endian"
+fi
 
 # Mount the disk
 
