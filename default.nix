@@ -1,6 +1,6 @@
 (import <nixpkgs/lib>).mapAttrs (config:
 { platform, qemuFlags ? "", kernelConfigure ? "", kernelInstall ? null }: let
-  version = "0.0.0";
+  version = "0.1.0";
 
   pkgsCross = import <nixpkgs> { crossSystem = platform; };
   pkgs = import <nixpkgs> {};
