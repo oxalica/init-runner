@@ -8,11 +8,12 @@ matrix:
     - env: TARGET=mipsel-unknown-linux-gnu
 
 script:
-  - export NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1
-  - nix-env -iA cachix -f https://cachix.org/api/v1/install
-  - cachix use init-runner
-  - nix copy --from https://init-runner.cachix.org -f . $TARGET.deps
-  - nix-build . -A $TARGET.package -o result-package
+  - |
+    export NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1
+    nix-env -iA cachix -f https://cachix.org/api/v1/install
+    cachix use init-runner
+    nix copy --from https://init-runner.cachix.org -f . $TARGET.deps
+    nix-build . -A $TARGET.package -o result-package
 
 deploy:
   provider: releases
