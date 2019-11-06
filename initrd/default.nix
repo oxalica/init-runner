@@ -20,7 +20,6 @@ in stdenv.mkDerivation {
     cp -Pr ${busybox'}/{bin,sbin} rootfs
 
     find ${glibc}/lib -maxdepth 1 -name '*.so*' -print0 | xargs -0 cp -Pt rootfs/lib
-    ln -s ld-linux-armhf.so.3 rootfs/lib/ld-linux.so.3
 
     cp ${stdenv.cc.cc}/${hostPlatform.config}/lib${lib.optionalString hostPlatform.is64bit "64"}/libgcc_s.so.1 \
       rootfs/lib
