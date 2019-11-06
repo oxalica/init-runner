@@ -32,11 +32,14 @@ with import <nixpkgs/lib>; {
   };
 
   mips-unknown-linux-gnu = {
-    qemuFlags = "-M malta";
+    qemuFlags = "-M malta -cpu 74Kf";
     platform = {
       config = "mips-unknown-linux-gnu";
       platform = {
-        gcc.abi = "32";
+        gcc = {
+          abi = "32";
+          arch = "mips32r2";
+        };
         kernelArch = "mips";
         kernelTarget = "vmlinux";
         kernelBaseConfig = "malta_defconfig";
@@ -58,11 +61,14 @@ with import <nixpkgs/lib>; {
   };
 
   mipsel-unknown-linux-gnu = {
-    qemuFlags = "-M malta";
+    qemuFlags = "-M malta -cpu 74Kf";
     platform = {
       config = "mipsel-unknown-linux-gnu";
       platform = {
-        gcc.abi = "32";
+        gcc = {
+          abi = "32";
+          arch = "mips32r2";
+        };
         kernelArch = "mips";
         kernelTarget = "vmlinux";
         kernelBaseConfig = "malta_defconfig";
